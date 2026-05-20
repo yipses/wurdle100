@@ -473,6 +473,7 @@
   let currentGuess = [];
   let gameOver = false;
   let locked = false;  // blocks input during validation + reveal animation
+  let confirmedPositions = new Set(); // tracks already-green positions so points aren't awarded twice
   let tiles = [];   // tiles[row][col]
 
   // ── Supabase helpers ────────────────────────────────────────────────────────
@@ -629,11 +630,17 @@
     const totalDelay = COLS * delay;
 
     setTimeout(() => {
-      // +5 pts per correct (green) letter, every guess (bonus applied)
-      const correctCount = result.filter(s => s === 'correct').length;
-      if (correctCount > 0) {
+      // +5 pts per newly discovered green tile (bonus applied)
+      let newCount = 0;
+      result.forEach((s, i) => {
+        if (s === 'correct' && !confirmedPositions.has(i)) {
+          confirmedPositions.add(i);
+          newCount++;
+        }
+      });
+      if (newCount > 0) {
         const multiplier = 1 + (currentRound - 1) * 0.1;
-        totalScore += Math.round(correctCount * 5 * multiplier);
+        totalScore += Math.round(newCount * 5 * multiplier);
         updateScoreDisplay();
       }
 
@@ -823,6 +830,7 @@
     currentGuess = [];
     gameOver = false;
     locked = false;
+    confirmedPositions = new Set();
     if (resetScore) {
       totalScore = 0;
       currentRound = 1;
