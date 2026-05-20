@@ -1,9 +1,10 @@
+<!-- Last modified: 2026-05-19 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wurdle</title>
+  <title>Wurdle Infinity</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -51,6 +52,86 @@
     }
 
     #message.visible { opacity: 1; }
+
+    #word-card {
+      display: none;
+      text-align: center;
+      background: #1a1a1b;
+      border: 1px solid #3a3a3c;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      max-width: 340px;
+      width: 340px;
+    }
+
+    #word-card .wc-banner {
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    #word-card.win  .wc-banner { background: #538d4e; }
+    #word-card.lose .wc-banner { background: #b03a2e; }
+
+    #word-card .wc-body {
+      padding: 14px 20px;
+    }
+
+    #word-card .wc-word {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    #word-card .wc-zipf {
+      font-size: 0.75rem;
+      color: #818384;
+      margin-bottom: 8px;
+    }
+
+    #word-card .wc-definition {
+      font-size: 0.85rem;
+      color: #d7dadc;
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    #play-again {
+      display: none;
+      margin-bottom: 16px;
+      padding: 10px 24px;
+      background: #538d4e;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #play-again:hover { background: #6aaf65; }
+
+    #continue-btn {
+      display: none;
+      margin-bottom: 16px;
+      padding: 10px 24px;
+      background: #538d4e;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #continue-btn:hover { background: #6aaf65; }
 
     /* Grid */
     #board {
@@ -158,19 +239,193 @@
     .key.present { background: #b59f3b; }
     .key.absent  { background: #3a3a3c; }
 
+    #score-display {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #818384;
+      margin-bottom: 12px;
+    }
+
+    #score-display .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    #score-display .stat-label { font-size: 0.65rem; color: #818384; }
+    #score-display .stat-value { font-size: 1rem; color: #fff; }
+    #score-display .hearts { font-size: 1.2rem; letter-spacing: 2px; }
+
     #loading {
       margin-top: 60px;
       font-size: 1rem;
       color: #818384;
       letter-spacing: 2px;
     }
+
+    /* Score submission form */
+    #score-form {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      width: 340px;
+    }
+
+    #score-form p { font-size: 0.85rem; color: #818384; }
+
+    #score-form input {
+      width: 100%;
+      padding: 10px 14px;
+      background: #1a1a1b;
+      border: 1px solid #565758;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 1rem;
+      text-align: center;
+      letter-spacing: 2px;
+      outline: none;
+    }
+
+    #score-form input:focus { border-color: #818384; }
+
+    #score-form button {
+      width: 100%;
+      padding: 10px;
+      background: #538d4e;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #score-form button:hover { background: #6aaf65; }
+    #score-form button:disabled { background: #3a3a3c; cursor: default; }
+
+    /* Leaderboard overlay */
+    #leaderboard-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #leaderboard-overlay.open { display: flex; }
+
+    #leaderboard-panel {
+      background: #1a1a1b;
+      border: 1px solid #3a3a3c;
+      border-radius: 8px;
+      width: 340px;
+      overflow: hidden;
+    }
+
+    #leaderboard-panel .lb-header {
+      background: #b59f3b;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    #leaderboard-list {
+      padding: 12px 20px;
+    }
+
+    .lb-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #3a3a3c;
+      font-size: 0.9rem;
+    }
+
+    .lb-row:last-child { border-bottom: none; }
+    .lb-rank { color: #818384; width: 24px; }
+    .lb-name { flex: 1; padding: 0 8px; }
+    .lb-score { font-weight: 700; color: #b59f3b; }
+
+    #leaderboard-panel .lb-close {
+      width: 100%;
+      padding: 10px;
+      background: #3a3a3c;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+    }
+
+    #leaderboard-panel .lb-close:hover { background: #565758; }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    footer a {
+      color: #818384;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    footer a:hover { color: #fff; }
   </style>
 </head>
 <body>
 
-<header><h1>Wurdle</h1></header>
+<header><h1>Wurdle Infinity</h1></header>
 
+<div id="score-display" style="display:none">
+  <div class="stat"><span class="stat-label">Round</span><span class="stat-value" id="round-value">1</span></div>
+  <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="score-value">0</span></div>
+  <div class="stat"><span class="stat-label">Bonus</span><span class="stat-value" id="bonus-value">+0%</span></div>
+  <div class="stat"><span class="stat-label">Lives</span><span class="stat-value hearts" id="lives-value">❤️❤️❤️</span></div>
+</div>
 <div id="message"></div>
+<div id="word-card">
+  <div class="wc-banner"></div>
+  <div class="wc-body">
+    <div class="wc-word"></div>
+    <div class="wc-zipf"></div>
+    <div class="wc-definition"></div>
+  </div>
+</div>
+<button id="continue-btn" onclick="resetGame()" style="display:none">Continue →</button>
+<button id="play-again" onclick="resetGame(true)">Play Again</button>
+
+<div id="score-form">
+  <p>Enter your name to save your score</p>
+  <input type="text" id="player-name" placeholder="Your name" maxlength="20" />
+  <button onclick="submitHighScore()">Submit Score</button>
+  <p id="submit-status"></p>
+</div>
+
+<div id="leaderboard-overlay">
+  <div id="leaderboard-panel">
+    <div class="lb-header">🏆 High Scores</div>
+    <div id="leaderboard-list"></div>
+    <button class="lb-close" onclick="closeLeaderboard()">Close</button>
+  </div>
+</div>
 
 <div id="loading">Loading words…</div>
 
@@ -186,9 +441,17 @@
   <div class="kb-row" id="kb-row-3"></div>
 </div>
 
+<footer>
+  <a href="#" onclick="openLeaderboard(); return false;">🏆 High Scores</a>
+</footer>
+
 <script>
   const SUPABASE_URL = 'https://eyollwbqfcumalskzawq.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_lEe4zebfDfZagrzGgslI-A_4y5Efusr';
+
+  const MIN_ZIPF    = 3.0;
+  const POINTS      = [100, 90, 80, 60, 40, 20]; // points for guessing in 1–6 tries
+  const MAX_LIVES   = 3;
 
   const ROWS = 6;
   const COLS = 5;
@@ -200,33 +463,65 @@
   ];
 
   let answer = '';
-  let words = [];
+  let answerZipf = 0;
+  let answerDefinition = '';
+  let totalScore = 0;
+  let currentRound = 1;
+  let lives = MAX_LIVES;
   let currentRow = 0;
   let currentCol = 0;
   let currentGuess = [];
   let gameOver = false;
+  let locked = false;  // blocks input during validation + reveal animation
   let tiles = [];   // tiles[row][col]
 
-  // ── Supabase fetch ──────────────────────────────────────────────────────────
+  // ── Supabase helpers ────────────────────────────────────────────────────────
 
-  async function loadWords() {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/words?select=word`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
+  async function rpc(fn, params = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
     if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+    return res.json();
+  }
 
-    const data = await res.json();
-    // Normalize to uppercase, keep only 5-letter words
-    return data
-      .map(r => (r.word || r.Word || '').toUpperCase().trim())
-      .filter(w => w.length === COLS);
+  async function fetchRandomWord() {
+    const data = await rpc('get_random_word', { min_zipf: MIN_ZIPF });
+    answer = data.word.toUpperCase();
+    answerZipf = data.zipf;
+    answerDefinition = data.definition || '';
+  }
+
+  async function isValidWord(guess) {
+    return rpc('is_valid_word', { guess: guess.toLowerCase() });
+  }
+
+  async function submitScore(name, score) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ name: name.trim(), score }),
+    });
+    return res.ok;
+  }
+
+  async function fetchTopScores() {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/scores?select=name,score&order=score.desc&limit=10`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+    );
+    return res.json();
   }
 
   // ── Build UI ────────────────────────────────────────────────────────────────
@@ -266,7 +561,7 @@
   // ── Game logic ──────────────────────────────────────────────────────────────
 
   function handleKey(key) {
-    if (gameOver) return;
+    if (gameOver || locked) return;
 
     if (key === '⌫' || key === 'Backspace') {
       deleteLetter();
@@ -297,14 +592,23 @@
     delete tile.dataset.letter;
   }
 
-  function submitGuess() {
+  async function submitGuess() {
     if (currentCol < COLS) {
       shakeTiles();
       showMessage('Not enough letters');
       return;
     }
 
+    locked = true;
     const guess = currentGuess.join('');
+    const valid = await isValidWord(guess);
+    if (!valid) {
+      shakeTiles();
+      showMessage('Not in word list');
+      locked = false;
+      return;
+    }
+
     revealGuess(guess);
   }
 
@@ -325,17 +629,37 @@
     const totalDelay = COLS * delay;
 
     setTimeout(() => {
+      // +5 pts per correct (green) letter, every guess (bonus applied)
+      const correctCount = result.filter(s => s === 'correct').length;
+      if (correctCount > 0) {
+        const multiplier = 1 + (currentRound - 1) * 0.1;
+        totalScore += Math.round(correctCount * 5 * multiplier);
+        updateScoreDisplay();
+      }
+
       if (guess === answer) {
         gameOver = true;
-        const msgs = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
-        showMessage(msgs[currentRow] || 'Nice!', 3000);
+        const base = POINTS[currentRow] ?? 20;
+        const multiplier = 1 + (currentRound - 1) * 0.1;
+        const earned = Math.round(base * multiplier);
+        totalScore += earned;
+        currentRound++;
+        updateScoreDisplay();
+        showWordCard(true, earned);
       } else if (currentRow === ROWS - 1) {
         gameOver = true;
-        showMessage(answer, 4000);
+        lives--;
+        updateScoreDisplay();
+        if (lives <= 0) {
+          showWordCard('gameover', 0);
+        } else {
+          showWordCard(false, 0);
+        }
       }
       currentRow++;
       currentCol = 0;
       currentGuess = [];
+      locked = false;
     }, totalDelay + 200);
   }
 
@@ -390,6 +714,141 @@
     });
   }
 
+  function updateScoreDisplay() {
+    document.getElementById('round-value').textContent = currentRound;
+    document.getElementById('score-value').textContent = totalScore;
+    const bonusPct = (currentRound - 1) * 10;
+    document.getElementById('bonus-value').textContent = `+${bonusPct}%`;
+    const heartsHTML = '❤️'.repeat(lives) + '🖤'.repeat(MAX_LIVES - lives);
+    document.getElementById('lives-value').textContent = heartsHTML;
+  }
+
+  function showWordCard(outcome, earned) {
+    // outcome: true = win, false = lost a life, 'gameover' = no lives left
+    const msgs = ['Genius!', 'Magnificent!', 'Impressive!', 'Splendid!', 'Great!', 'Phew!'];
+    const card = document.getElementById('word-card');
+    card.classList.remove('win', 'lose');
+
+    let bannerText;
+    if (outcome === true) {
+      card.classList.add('win');
+      bannerText = `${msgs[currentRow] || 'You got it!'} +${earned} pts`;
+    } else if (outcome === false) {
+      card.classList.add('lose');
+      bannerText = `Life lost! ${lives} ❤️ remaining`;
+    } else {
+      card.classList.add('lose');
+      bannerText = `Game over! Final score: ${totalScore}`;
+    }
+
+    card.querySelector('.wc-banner').textContent = bannerText;
+    card.querySelector('.wc-word').textContent = answer;
+    card.querySelector('.wc-zipf').textContent = `Zipf score: ${answerZipf}`;
+    card.querySelector('.wc-definition').textContent = answerDefinition || 'No definition available.';
+    card.style.display = 'block';
+
+    if (outcome === true) {
+      const btn = document.getElementById('continue-btn');
+      btn.style.display = 'inline-block';
+      btn.focus();
+    } else if (outcome === false) {
+      // Life lost — show Continue button
+      const btn = document.getElementById('continue-btn');
+      btn.style.display = 'inline-block';
+      btn.focus();
+    } else {
+      // Game over — show score form
+      const form = document.getElementById('score-form');
+      document.getElementById('player-name').value = '';
+      document.getElementById('submit-status').textContent = '';
+      form.style.display = 'flex';
+      document.getElementById('player-name').focus();
+    }
+  }
+
+  async function submitHighScore() {
+    const nameEl = document.getElementById('player-name');
+    const statusEl = document.getElementById('submit-status');
+    const btn = document.querySelector('#score-form button');
+    const name = nameEl.value.trim();
+    if (!name) { statusEl.textContent = 'Please enter your name.'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    const ok = await submitScore(name, totalScore);
+    if (ok) {
+      statusEl.textContent = '✅ Score saved!';
+      btn.textContent = 'Saved';
+      setTimeout(() => {
+        document.getElementById('score-form').style.display = 'none';
+        document.getElementById('play-again').style.display = 'inline-block';
+        document.getElementById('play-again').focus();
+      }, 1000);
+    } else {
+      statusEl.textContent = '❌ Could not save. Try again.';
+      btn.disabled = false;
+      btn.textContent = 'Submit Score';
+    }
+  }
+
+  async function openLeaderboard() {
+    const overlay = document.getElementById('leaderboard-overlay');
+    const list = document.getElementById('leaderboard-list');
+    overlay.classList.add('open');
+    list.innerHTML = '<div class="lb-row" style="justify-content:center;color:#818384">Loading…</div>';
+    const scores = await fetchTopScores();
+    if (!scores.length) {
+      list.innerHTML = '<div class="lb-row" style="justify-content:center;color:#818384">No scores yet!</div>';
+      return;
+    }
+    list.innerHTML = scores.map((s, i) => `
+      <div class="lb-row">
+        <span class="lb-rank">#${i + 1}</span>
+        <span class="lb-name">${s.name}</span>
+        <span class="lb-score">${s.score}</span>
+      </div>`).join('');
+  }
+
+  function closeLeaderboard() {
+    document.getElementById('leaderboard-overlay').classList.remove('open');
+  }
+
+  async function resetGame(resetScore = false) {
+    // Pick a new word
+    await fetchRandomWord();
+
+    // Reset state
+    currentRow = 0;
+    currentCol = 0;
+    currentGuess = [];
+    gameOver = false;
+    locked = false;
+    if (resetScore) {
+      totalScore = 0;
+      currentRound = 1;
+      lives = MAX_LIVES;
+    }
+    updateScoreDisplay();
+
+    // Clear board
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    buildBoard();
+
+    // Reset keyboard colours
+    document.querySelectorAll('.key').forEach(k => {
+      k.classList.remove('correct', 'present', 'absent');
+    });
+
+    // Hide buttons, word card, score form and message
+    document.getElementById('continue-btn').style.display = 'none';
+    document.getElementById('play-again').style.display = 'none';
+    document.getElementById('word-card').style.display = 'none';
+    document.getElementById('score-form').style.display = 'none';
+    const msg = document.getElementById('message');
+    msg.classList.remove('visible');
+  }
+
   let messageTimer;
   function showMessage(text, duration = 1800) {
     const el = document.getElementById('message');
@@ -405,16 +864,14 @@
 
   async function init() {
     try {
-      words = await loadWords();
-      if (words.length === 0) throw new Error('No 5-letter words found in the Words table.');
-
-      answer = words[Math.floor(Math.random() * words.length)];
+      await fetchRandomWord();
 
       document.getElementById('loading').remove();
       buildBoard();
       buildKeyboard();
       document.getElementById('board').style.display = '';
       document.getElementById('keyboard').style.display = '';
+      document.getElementById('score-display').style.display = '';
 
       document.addEventListener('keydown', e => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
