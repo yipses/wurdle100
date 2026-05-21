@@ -177,7 +177,7 @@
 
     .tile.correct  { --bg: #538d4e; }
     .tile.present  { --bg: #b59f3b; }
-    .tile.absent   { --bg: #3a3a3c; }
+    .tile.absent   { --bg: #8b2020; }
 
     @keyframes pop {
       0%   { transform: scale(1); }
@@ -226,6 +226,8 @@
       text-transform: uppercase;
       cursor: pointer;
       user-select: none;
+      touch-action: manipulation; /* removes 300ms tap delay on mobile */
+      -webkit-tap-highlight-color: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -235,9 +237,32 @@
     .key.wide { min-width: 65px; font-size: 0.75rem; }
     .key:active { filter: brightness(0.85); }
 
+    /* Mobile keyboard — fits within iPhone screen */
+    @media (max-width: 480px) {
+      .key {
+        height: 46px;
+        min-width: 0;
+        width: calc((100vw - 16px - 9 * 4px) / 10);
+        font-size: 0.75rem;
+        padding: 0;
+        border-radius: 3px;
+      }
+      .key.wide {
+        width: calc((100vw - 16px - 8 * 4px) / 9 * 1.4);
+        font-size: 0.65rem;
+      }
+      .kb-row { gap: 4px; }
+      #keyboard { gap: 5px; padding: 0 8px; }
+      .tile { width: 52px; height: 52px; font-size: 1.6rem; }
+      #board {
+        grid-template-rows: repeat(6, 52px);
+      }
+      .row { grid-template-columns: repeat(5, 52px); }
+    }
+
     .key.correct { background: #538d4e; }
     .key.present { background: #b59f3b; }
-    .key.absent  { background: #3a3a3c; }
+    .key.absent  { background: #8b2020; }
 
     #score-display {
       display: flex;
@@ -457,7 +482,7 @@
   const KB_ROWS = [
     ['Q','W','E','R','T','Y','U','I','O','P'],
     ['A','S','D','F','G','H','J','K','L'],
-    ['Enter','Z','X','C','V','B','N','M','⌫'],
+    ['⌫','Z','X','C','V','B','N','M','Enter'],
   ];
 
   let answer = '';
@@ -599,6 +624,7 @@
 
     locked = true;
     const guess = currentGuess.join('');
+    showMessage('Checking…', 0);
     const valid = await isValidWord(guess);
     if (!valid) {
       shakeTiles();
@@ -606,7 +632,7 @@
       locked = false;
       return;
     }
-
+    showMessage('', 0);
     revealGuess(guess);
   }
 
