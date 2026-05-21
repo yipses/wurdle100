@@ -398,7 +398,6 @@
   <div class="stat"><span class="stat-label">Round</span><span class="stat-value" id="round-value">1</span></div>
   <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="score-value">0</span></div>
   <div class="stat"><span class="stat-label">Bonus</span><span class="stat-value" id="bonus-value">+0%</span></div>
-  <div class="stat"><span class="stat-label">Lives</span><span class="stat-value hearts" id="lives-value">❤️❤️❤️</span></div>
 </div>
 <div id="message"></div>
 <div id="word-card">
@@ -449,9 +448,8 @@
   const SUPABASE_URL = 'https://eyollwbqfcumalskzawq.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_lEe4zebfDfZagrzGgslI-A_4y5Efusr';
 
-  const MIN_ZIPF    = 3.0;
+  const MIN_ZIPF    = 3.75;
   const POINTS      = [100, 90, 80, 60, 40, 20]; // points for guessing in 1–6 tries
-  const MAX_LIVES   = 3;
 
   const ROWS = 6;
   const COLS = 5;
@@ -467,7 +465,6 @@
   let answerDefinition = '';
   let totalScore = 0;
   let currentRound = 1;
-  let lives = MAX_LIVES;
   let currentRow = 0;
   let currentCol = 0;
   let currentGuess = [];
@@ -655,13 +652,7 @@
         showWordCard(true, earned);
       } else if (currentRow === ROWS - 1) {
         gameOver = true;
-        lives--;
-        updateScoreDisplay();
-        if (lives <= 0) {
-          showWordCard('gameover', 0);
-        } else {
-          showWordCard(false, 0);
-        }
+        showWordCard('gameover', 0);
       }
       currentRow++;
       currentCol = 0;
@@ -726,8 +717,6 @@
     document.getElementById('score-value').textContent = totalScore;
     const bonusPct = (currentRound - 1) * 10;
     document.getElementById('bonus-value').textContent = `+${bonusPct}%`;
-    const heartsHTML = '❤️'.repeat(lives) + '🖤'.repeat(MAX_LIVES - lives);
-    document.getElementById('lives-value').textContent = heartsHTML;
   }
 
   function showWordCard(outcome, earned) {
@@ -740,9 +729,6 @@
     if (outcome === true) {
       card.classList.add('win');
       bannerText = `${msgs[currentRow] || 'You got it!'} +${earned} pts`;
-    } else if (outcome === false) {
-      card.classList.add('lose');
-      bannerText = `Life lost! ${lives} ❤️ remaining`;
     } else {
       card.classList.add('lose');
       bannerText = `Game over! Final score: ${totalScore}`;
@@ -755,11 +741,6 @@
     card.style.display = 'block';
 
     if (outcome === true) {
-      const btn = document.getElementById('continue-btn');
-      btn.style.display = 'inline-block';
-      btn.focus();
-    } else if (outcome === false) {
-      // Life lost — show Continue button
       const btn = document.getElementById('continue-btn');
       btn.style.display = 'inline-block';
       btn.focus();
@@ -834,7 +815,6 @@
     if (resetScore) {
       totalScore = 0;
       currentRound = 1;
-      lives = MAX_LIVES;
     }
     updateScoreDisplay();
 
